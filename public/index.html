@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pandoc GUI - Universal Document Converter</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📄 Pandoc GUI</h1>
+            <p class="subtitle">Universal Document Converter with Comprehensive Formatting Support</p>
+            <div id="pandocStatus" class="status-indicator"></div>
+        </header>
+
+        <main>
+            <!-- Mode Selection -->
+            <div class="mode-selector">
+                <button class="mode-btn active" data-mode="single">Single File</button>
+                <button class="mode-btn" data-mode="batch">Batch Processing</button>
+            </div>
+
+            <!-- File Upload Section -->
+            <section class="upload-section">
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="fileInput" accept="*/*" hidden>
+                    <input type="file" id="batchFileInput" accept="*/*" multiple hidden>
+
+                    <div class="upload-content">
+                        <div class="upload-icon">📎</div>
+                        <h3>Drop files here or click to browse</h3>
+                        <p class="upload-hint">Supports: Markdown, HTML, DOCX, ODT, EPUB, LaTeX, RTF, and more</p>
+                    </div>
+                </div>
+
+                <div id="fileList" class="file-list"></div>
+            </section>
+
+            <!-- Format Selection -->
+            <section class="format-section">
+                <div class="format-group">
+                    <label for="inputFormat">
+                        <span class="label-icon">📥</span>
+                        Input Format
+                    </label>
+                    <select id="inputFormat" class="format-select">
+                        <option value="">Auto-detect</option>
+                    </select>
+                </div>
+
+                <div class="format-arrow">→</div>
+
+                <div class="format-group">
+                    <label for="outputFormat">
+                        <span class="label-icon">📤</span>
+                        Output Format
+                    </label>
+                    <select id="outputFormat" class="format-select">
+                        <option value="">Select format...</option>
+                    </select>
+                </div>
+            </section>
+
+            <!-- Conversion Options -->
+            <section class="options-section">
+                <h3 class="section-title" onclick="toggleSection('options')">
+                    <span class="toggle-icon">▼</span>
+                    Conversion Options
+                </h3>
+                <div id="options" class="options-content">
+                    <div class="options-grid">
+                        <label class="option-item">
+                            <input type="checkbox" id="optToc" class="option-checkbox">
+                            <span class="option-label">
+                                <strong>Table of Contents</strong>
+                                <small>Generate TOC for document</small>
+                            </span>
+                        </label>
+
+                        <label class="option-item">
+                            <input type="checkbox" id="optNumberSections" class="option-checkbox">
+                            <span class="option-label">
+                                <strong>Number Sections</strong>
+                                <small>Auto-number headings</small>
+                            </span>
+                        </label>
+
+                        <label class="option-item">
+                            <input type="checkbox" id="optBibliography" class="option-checkbox">
+                            <span class="option-label">
+                                <strong>Bibliography</strong>
+                                <small>Enable citation processing</small>
+                            </span>
+                        </label>
+
+                        <label class="option-item">
+                            <input type="checkbox" id="optCss" class="option-checkbox" checked>
+                            <span class="option-label">
+                                <strong>CSS Styling</strong>
+                                <small>Enhanced HTML styling</small>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Features List -->
+            <section class="features-section">
+                <h3 class="section-title" onclick="toggleSection('features')">
+                    <span class="toggle-icon">▼</span>
+                    Supported Features
+                </h3>
+                <div id="features" class="features-content collapsed">
+                    <div class="features-grid">
+                        <div class="feature-badge">✓ Clean Paragraph Formatting</div>
+                        <div class="feature-badge">✓ Numbered & Bullet Lists</div>
+                        <div class="feature-badge">✓ Nested Lists & Indents</div>
+                        <div class="feature-badge">✓ Heading Structures (H1-H6)</div>
+                        <div class="feature-badge">✓ Table Conversion</div>
+                        <div class="feature-badge">✓ Footnotes & Endnotes</div>
+                        <div class="feature-badge">✓ Image Processing</div>
+                        <div class="feature-badge">✓ Text Styling (Bold, Italics)</div>
+                        <div class="feature-badge">✓ Hyperlinks & Anchor Text</div>
+                        <div class="feature-badge">✓ Batch Processing</div>
+                        <div class="feature-badge">✓ Line Breaks & Spacing</div>
+                        <div class="feature-badge">✓ Text Boxes Handling</div>
+                        <div class="feature-badge">✓ Inline Comments</div>
+                        <div class="feature-badge">✓ ZIP Download</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Convert Button -->
+            <button id="convertBtn" class="convert-btn" disabled>
+                <span class="btn-icon">🔄</span>
+                Convert Document
+            </button>
+
+            <!-- Progress Bar -->
+            <div id="progressSection" class="progress-section hidden">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p id="progressText" class="progress-text">Converting...</p>
+            </div>
+
+            <!-- Result Section -->
+            <div id="resultSection" class="result-section hidden">
+                <div class="result-icon">✅</div>
+                <p class="result-message">Conversion successful!</p>
+                <p class="result-hint">Your download should start automatically</p>
+            </div>
+
+            <!-- Error Section -->
+            <div id="errorSection" class="error-section hidden">
+                <div class="error-icon">⚠️</div>
+                <p class="error-message" id="errorMessage"></p>
+            </div>
+        </main>
+
+        <footer>
+            <p>Powered by <a href="https://pandoc.org" target="_blank">Pandoc</a> |
+            Running locally on your machine |
+            <a href="https://github.com/jgm/pandoc" target="_blank">Source Code</a></p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

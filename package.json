@@ -1,0 +1,30 @@
+{
+  "name": "pandoc-gui",
+  "version": "1.0.0",
+  "description": "A browser-based GUI for Pandoc document conversion with comprehensive formatting support",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "pandoc",
+    "document-conversion",
+    "gui",
+    "markdown",
+    "html",
+    "pdf",
+    "docx"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1",
+    "archiver": "^6.0.1",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
