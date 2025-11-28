@@ -1,6 +1,5 @@
 // State management
 const state = {
-    mode: 'single',
     files: [],
     inputFormat: '',
     outputFormat: '',
@@ -11,7 +10,6 @@ const state = {
 const elements = {
     uploadArea: document.getElementById('uploadArea'),
     fileInput: document.getElementById('fileInput'),
-    batchFileInput: document.getElementById('batchFileInput'),
     fileList: document.getElementById('fileList'),
     inputFormat: document.getElementById('inputFormat'),
     outputFormat: document.getElementById('outputFormat'),
@@ -86,23 +84,9 @@ async function loadFormats() {
 
 // Setup event listeners
 function setupEventListeners() {
-    // Mode selector
-    document.querySelectorAll('.mode-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            state.mode = btn.dataset.mode;
-            clearFiles();
-        });
-    });
-
     // Upload area click
     elements.uploadArea.addEventListener('click', () => {
-        if (state.mode === 'single') {
-            elements.fileInput.click();
-        } else {
-            elements.batchFileInput.click();
-        }
+        elements.fileInput.click();
     });
 
     // Drag and drop
@@ -118,21 +102,11 @@ function setupEventListeners() {
     elements.uploadArea.addEventListener('drop', (e) => {
         e.preventDefault();
         elements.uploadArea.classList.remove('drag-over');
-
-        const files = Array.from(e.dataTransfer.files);
-        if (state.mode === 'single' && files.length > 0) {
-            handleFiles([files[0]]);
-        } else {
-            handleFiles(files);
-        }
+        handleFiles(Array.from(e.dataTransfer.files));
     });
 
     // File input change
     elements.fileInput.addEventListener('change', (e) => {
-        handleFiles(Array.from(e.target.files));
-    });
-
-    elements.batchFileInput.addEventListener('change', (e) => {
         handleFiles(Array.from(e.target.files));
     });
 
@@ -160,12 +134,7 @@ function setupEventListeners() {
 
 // Handle file selection
 function handleFiles(files) {
-    if (state.mode === 'single') {
-        state.files = files.slice(0, 1);
-    } else {
-        state.files = [...state.files, ...files];
-    }
-
+    state.files = [...state.files, ...files];
     displayFiles();
     updateConvertButton();
 }
@@ -202,7 +171,6 @@ function removeFile(index) {
 function clearFiles() {
     state.files = [];
     elements.fileInput.value = '';
-    elements.batchFileInput.value = '';
     displayFiles();
     updateConvertButton();
 }
@@ -253,7 +221,7 @@ async function convertFiles() {
     elements.convertBtn.disabled = true;
 
     try {
-        if (state.mode === 'single') {
+        if (state.files.length === 1) {
             await convertSingleFile();
         } else {
             await convertBatchFiles();

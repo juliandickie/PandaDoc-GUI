@@ -265,49 +265,59 @@ app.post('/api/convert-batch', upload.array('files', 50), async (req, res) => {
       }
     }
 
-    // Create ZIP file
+    // Create ZIP file with proper Promise handling
     const zipPath = path.join('downloads', `converted-${timestamp}.zip`);
-    const output = require('fs').createWriteStream(zipPath);
-    const archive = archiver('zip', { zlib: { level: 9 } });
 
-    output.on('close', async () => {
-      // Send the ZIP file
-      res.download(zipPath, `converted-documents.zip`, async (err) => {
-        // Cleanup
-        try {
-          for (const file of req.files) {
-            await fs.unlink(file.path);
-          }
-          for (const conv of conversions) {
-            if (conv.success && conv.path) {
-              await fs.unlink(conv.path);
-            }
-          }
-          await fs.unlink(zipPath);
-        } catch (cleanupErr) {
-          console.error('Cleanup error:', cleanupErr);
-        }
+    await new Promise((resolve, reject) => {
+      const output = require('fs').createWriteStream(zipPath);
+      const archive = archiver('zip', { zlib: { level: 9 } });
 
-        if (err) {
-          console.error('Download error:', err);
-        }
+      output.on('close', () => {
+        console.log(`ZIP created: ${archive.pointer()} total bytes`);
+        resolve();
       });
-    });
 
-    archive.on('error', (err) => {
-      throw err;
-    });
+      archive.on('error', (err) => {
+        reject(err);
+      });
 
-    archive.pipe(output);
+      output.on('error', (err) => {
+        reject(err);
+      });
 
-    // Add successful conversions to ZIP
-    for (const conv of conversions) {
-      if (conv.success && conv.path) {
-        archive.file(conv.path, { name: conv.converted });
+      archive.pipe(output);
+
+      // Add successful conversions to ZIP
+      for (const conv of conversions) {
+        if (conv.success && conv.path) {
+          archive.file(conv.path, { name: conv.converted });
+        }
       }
-    }
 
-    await archive.finalize();
+      archive.finalize();
+    });
+
+    // Send the ZIP file
+    res.download(zipPath, `converted-documents.zip`, async (err) => {
+      // Cleanup
+      try {
+        for (const file of req.files) {
+          await fs.unlink(file.path);
+        }
+        for (const conv of conversions) {
+          if (conv.success && conv.path) {
+            await fs.unlink(conv.path);
+          }
+        }
+        await fs.unlink(zipPath);
+      } catch (cleanupErr) {
+        console.error('Cleanup error:', cleanupErr);
+      }
+
+      if (err) {
+        console.error('Download error:', err);
+      }
+    });
 
   } catch (error) {
     console.error('Batch conversion error:', error);
